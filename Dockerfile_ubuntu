@@ -1,0 +1,37 @@
+#docker build -t imageubuntu -f Dockerfile_ubuntu .
+#docker run --dns=8.8.8.8 --network bridge -d -p 127.0.0.1:2222:22 --name contUbuntu imageubuntu
+
+#if you wanna connect to container via SSH you should use following command: ssh userLinux@127.0.0.1 -p 2222
+#if you wanna send a file or directory from host to container you should you following command: docker cp hostDirectoryName/ contUbuntu:/home/userLinux/
+#   or scp -r -P 2222 userLinux@localhost:/remoteFolder localFolder/
+
+FROM ubuntu:22.04
+
+RUN apt-get update && apt-get upgrade -y \
+&& apt-get install -y build-essential \
+g++ \
+cmake \
+git \
+ssh \
+&& apt-get clean \
+&& rm -rf /var/lib/apt/lists/*
+
+RUN wget -O boostLibrary.tar.gz \
+https://archives.boost.io/release/1.81.0/source/boost_1_81_0.tar.gz
+RUN tar xzf boostLibrary.tar.gz
+RUN cd boost_1_81_0 && ./bootstrap.sh --prefix=/usr/local && ./b2 -j 4 install
+
+RUN useradd -m userLinux && echo "userLinux:password" | chpasswd
+RUN usermod -s /bin/bash userLinux
+RUN usermod -aG sudo userLinux
+
+RUN ( \
+   echo 'LogLevel DEBUG2'; \
+   echo 'PermitRootLogin yes'; \
+   echo 'PasswordAuthentication yes'; \
+   echo 'Subsystem sftp /usr/lib/openssh/sftp-server'; \
+   ) > /etc/ssh/sshd_config \
+   && mkdir /run/sshd
+
+ENTRYPOINT ["/usr/sbin/sshd"]
+CMD ["-D", "-e", "-f", "/etc/ssh/sshd_config"]
