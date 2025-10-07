@@ -9,7 +9,7 @@
 class Generator
 {
 private:
-    std::atomic_uint32_t m_globalId{0};
+    std::atomic_uint64_t m_globalId{0};
     uint64_t m_totalPcktSends{0};
 
     inline static constexpr const uint16_t MIN_SIZE_PAYLOAD = 32;
@@ -20,7 +20,7 @@ private:
 
     const uint8_t m_countThreads{0};
     std::vector<std::jthread> m_threads;
-    std::function<void()> m_producerLogic;
+    std::function<void(uint8_t threadId)> m_producerLogic;
 
 private:
 
@@ -31,7 +31,6 @@ private:
         m_prngVec.reserve(m_countThreads);
 
         std::vector<uint32_t> ent = { m_rd(), m_rd(), m_rd(), m_rd() };
-        short counter{0};
         for (size_t i = 0; i < m_countThreads; i++)
         {
             std::seed_seq ss{ 
@@ -39,8 +38,7 @@ private:
                 ent[1], 
                 ent[2], 
                 ent[3],
-                static_cast<uint32_t>(i),
-                counter++
+                static_cast<uint32_t>(i)
             };
             m_prngVec.emplace_back(ss);
         }
@@ -52,7 +50,7 @@ private:
     {
         std::uniform_int_distribution<uint64_t> dist(seqPckt, 2 * seqPckt);
         uint64_t rndSize = dist(prng);
-        return static_cast<uint16_t>(std::min(std::max(rndSize, MIN_SIZE_PAYLOAD), MAX_SIZE_PAYLOAD));
+        return static_cast<uint16_t>(std::min(std::max(rndSize, MIN_SIZE_PAYLOAD), MAX_SIZE_PAYLOAD)); //!!нужно делить пакет на две отправки, а не сужать его до [32;900]
     }
 
     void producerLogic(uint8_t threadId)
@@ -61,12 +59,12 @@ private:
         while(true)
         {
             uint64_t seqPckt = m_globalId.fetch_add(1);
-            if (m_totalPcktSends < seqPckt)
+            if (m_totalPcktSends <= seqPckt)
             {
                 break;
             }
 
-            uint16_t payLoadSize = payLoadSize(seqPckt, prng);
+            uint16_t payLoadSize = calcPayLoadSize(seqPckt, prng);
 
             std::vector<unsigned char> payload(payLoadSize);
             std::uniform_int_distribution<int> pl_dist(0, 255);
@@ -74,6 +72,8 @@ private:
             {
                 symbol = static_cast<unsigned char>(pl_dist(prng));
             }
+
+            //Пора создавать Packet и наполнять его
         }
     }
 
@@ -91,7 +91,9 @@ public:
     {
         for (size_t i = 0; i < m_countThreads; i++)
         {
-            m_threads.emplace_back(m_producerLogic);
+            m_threads.emplace_back([this, i](){
+                m_producerLogic(i);
+            });
         }
     }
 };
