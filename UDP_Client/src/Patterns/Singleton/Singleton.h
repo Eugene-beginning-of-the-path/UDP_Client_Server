@@ -1,6 +1,6 @@
 #pragma once
 
-//CRTP Singleton
+//CRTP Singleton of Myers
 namespace dev::patrn
 {
     template <typename T>

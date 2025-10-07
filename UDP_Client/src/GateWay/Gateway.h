@@ -21,20 +21,9 @@ namespace dev
         inline static constexpr uint16_t DEFAULT_PORT = 6666;
 
     protected:
-        Gateway() : Gateway(DEFAULT_IP_V4, DEFAULT_PORT) { }
-
-        Gateway(const std::string& ipv4, const uint16_t port) : 
-        m_udpSock(m_io), m_endPoint(boost::asio::ip::make_address(ipv4), port)
-        {
-            m_udpSock.open(udp::v4());
-            m_udpSock.connect(m_endPoint);
-        }
+        Gateway(const std::string& ipv4 = DEFAULT_IP_V4, const uint16_t port = DEFAULT_PORT);
 
     public:
-        std::size_t send(std::vector<unsigned char>&& buff)
-        {
-            return m_udpSock.send(boost::asio::buffer(buff));
-        }
-        
+        std::size_t send(std::vector<unsigned char>&& buff);
     };
 }
