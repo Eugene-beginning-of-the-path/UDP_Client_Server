@@ -1,4 +1,4 @@
-#include <GateWay/Gateway.h>
+#include "GateWay/Gateway.h"
 
 dev::Gateway::Gateway(const std::string& ipv4, const uint16_t port) : 
     m_udpSock(m_io), m_endPoint(boost::asio::ip::make_address(ipv4), port)

@@ -1,0 +1,48 @@
+#include "Utils/Utils.h"
+
+#include <arpa/inet.h> //POSIX htons/htol
+#include <bit>         //std::endian
+#include <chrono>
+#include <cstring>
+#include <openssl/sha.h>
+
+uint64_t dev::utls::timeStampNow()
+{
+    auto ns = std::chrono::time_point_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now()).time_since_epoch();
+    return static_cast<uint64_t>(ns.count());
+}
+
+uint64_t dev::utls::htonll(uint64_t v)
+{
+    if constexpr (std::endian::native == std::endian::little)
+        return __builtin_bswap64(v);
+    else
+        return v;
+}
+
+std::array<unsigned char, dev::Packet::PCKT_HEADER_SIZE> dev::utls::getRawNetworkHeader(const dev::Packet& pckt)
+{
+    std::array<unsigned char, dev::Packet::PCKT_HEADER_SIZE> headerRawBuff;
+    headerRawBuff.fill(0);
+
+    const uint16_t seq = htons(pckt.m_seqNum);
+    const uint64_t tmNs = htonll(pckt.m_timeStampNs);
+
+    std::memcpy(headerRawBuff.data(),               &seq,   sizeof(seq));
+    std::memcpy(headerRawBuff.data()+sizeof(seq),   &tmNs,  sizeof(tmNs));
+    return headerRawBuff;
+}
+
+dev::utls::SHA256Buff dev::utls::calcSha256(const HeadBuff& header, const PayLoadBuff& payLoad)
+{
+    SHA256Buff res;
+
+    SHA256_CTX ctx;
+    SHA256_Init(&ctx);
+
+    SHA256_Update(&ctx, header.data(), header.size());
+    SHA256_Update(&ctx, payLoad.data(), payLoad.size());
+
+    SHA256_Final(res.data(), &ctx);
+    return res;
+}
