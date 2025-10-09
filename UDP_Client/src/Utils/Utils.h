@@ -1,7 +1,10 @@
 #pragma once
 
 #include <array>
+#include <memory>
 #include <cstdint>
+#include <arpa/inet.h> //POSIX htons/htol
+#include <openssl/sha.h>
 
 #include "Packet/Packet.h"
 
@@ -13,6 +16,6 @@ namespace dev::utls
 
     uint64_t timeStampNow();
     uint64_t htonll(uint64_t v);
-    HeadBuff getRawNetworkHeader(const dev::Packet& pckt);
+    HeadBuff getWireHeader(const dev::Packet& pckt);
     SHA256Buff calcSha256(const HeadBuff& header, const PayLoadBuff& payLoad);
 }

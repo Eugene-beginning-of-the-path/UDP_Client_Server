@@ -1,8 +1,6 @@
-#include "Generator/Generator.h"
 #include "Packet/Packet.h"
-#include "Utils/Utils.h"
-
-#include <algorithm>
+#include "Generator/Generator.h"
+#include "Packet/PacketBuilder/PacketBuilder.h"
 
 dev::Generator::Generator(uint64_t totalPcktSends, uint8_t countThreads, std::function<void(uint8_t threadId)> producerLogic) : 
     m_totalPcktSends(totalPcktSends),
@@ -58,9 +56,13 @@ void dev::Generator::producerLogic(uint8_t threadId)
         }
 
         //Пора создавать Packet и наполнять его
-        Packet pckt{ .m_seqNum = seqPckt, .m_timeStampNs = dev::utls::timeStampNow(), .m_payload = std::move(payload) };
-        auto headerRawBuff = utls::getRawNetworkHeader(pckt);
-        utls::SHA256Buff checkSum = utls::calcSha256(headerRawBuff, payload);
+        static thread_local std::unique_ptr<Builder> builder = std::make_unique<PacketBuilder>();
+        
+            .m_seqNum = seqPckt, 
+            .m_timeStampNs = utls::timeStampNow(), 
+            .m_payLoadSize = payload.size(),
+            .m_payload = std::move(payload) };
+        
     }
 }
 

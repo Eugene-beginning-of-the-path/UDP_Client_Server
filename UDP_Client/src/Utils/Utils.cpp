@@ -1,6 +1,5 @@
 #include "Utils/Utils.h"
 
-#include <arpa/inet.h> //POSIX htons/htol
 #include <bit>         //std::endian
 #include <chrono>
 #include <cstring>
@@ -20,16 +19,18 @@ uint64_t dev::utls::htonll(uint64_t v)
         return v;
 }
 
-std::array<unsigned char, dev::Packet::PCKT_HEADER_SIZE> dev::utls::getRawNetworkHeader(const dev::Packet& pckt)
+dev::utls::HeadBuff dev::utls::getWireHeader(const dev::Packet& pckt)
 {
     std::array<unsigned char, dev::Packet::PCKT_HEADER_SIZE> headerRawBuff;
     headerRawBuff.fill(0);
 
     const uint16_t seq = htons(pckt.m_seqNum);
     const uint64_t tmNs = htonll(pckt.m_timeStampNs);
+    const size_t payLoadSize = htonll(pckt.m_payLoadSize);
 
     std::memcpy(headerRawBuff.data(),               &seq,   sizeof(seq));
     std::memcpy(headerRawBuff.data()+sizeof(seq),   &tmNs,  sizeof(tmNs));
+    std::memcpy(headerRawBuff.data()+sizeof(tmNs),   &payLoadSize,  sizeof(payLoadSize));
     return headerRawBuff;
 }
 

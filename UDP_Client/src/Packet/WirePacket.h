@@ -1,13 +1,15 @@
 #pragma once
 
-#include "Utils/Utils.h"
+#include "Packet/Packet.h"
+#include "Packet/WireHeader.h"
 
 namespace dev
 {
     struct WirePacket
     {
-                                              //          [    HEADER    ]
-        std::vector<unsigned char> m_rawData; //sequence: seqNum timeStamp payLoad 
-        utls::SHA256Buff m_checkSum;
+        Packet m_pcktData;
+        WireHeader m_wireHeader;
+                                           //          [---------------HEADER--------------]
+        std::vector<unsigned char> m_wire; //sequence: seqNum timeStamp payLoadSize checkSum payLoad
     };
 }
