@@ -4,14 +4,14 @@
 #include "Packet/PacketBuilder/PacketDirector.h"
 
 dev::Generator::Generator(uint64_t totalPcktSends, uint8_t countThreads, 
-        std::optional<std::function<void(uint8_t threadId)>> producerLogic) : 
+        std::optional<std::function<void(uint8_t, ConfirmList&)>> producerLogic) : 
     m_totalPcktSends(totalPcktSends),
     m_countThreads(countThreads),
     m_sendingQueue(std::make_shared<PacketQueue>())
 {
     m_producerLogic = producerLogic.value_or(
-        std::function<void(uint8_t)>([this](uint8_t id){
-            this->producerLogic(id);
+        std::function<void(uint8_t, ConfirmList&)>([this](uint8_t id, ConfirmList& cnfrmList){
+            this->producerLogic(id, cnfrmList);
         }));
     
     m_threads.reserve(m_countThreads);
@@ -42,8 +42,7 @@ uint16_t dev::Generator::calcPayLoadSize(uint16_t seqPckt, std::mt19937_64 & prn
     return dist(prng);
 }
 
-#include <iostream>
-void dev::Generator::producerLogic(uint8_t threadId)
+void dev::Generator::producerLogic(uint8_t threadId, ConfirmList& cnfrmList)
 {
     std::mt19937_64 & prng = m_prngVec[threadId];
     while(true)
@@ -63,20 +62,22 @@ void dev::Generator::producerLogic(uint8_t threadId)
 
         static thread_local std::unique_ptr<PacketDirector> builder = std::make_unique<PacketDirector>(std::make_unique<PacketBuilder>());
         builder->buildProduct(seqPckt, utls::timeStampNow(), std::move(payload));
-        
+
+        auto wirePckt = builder->getProduct();
+        cnfrmList.push(wirePckt->m_wireHeader.m_seqNum, InWait{.m_pckt = wirePckt});
         {
             std::lock_guard<std::mutex> lock(m_queueMtx);
-            m_sendingQueue->push(std::move(builder->getProduct()->m_wire));
+            m_sendingQueue->push(wirePckt->m_wire);
         }
     }
 }
 
-void dev::Generator::startGenerate()
+void dev::Generator::startGenerate(ConfirmList& cnfrmList)
 {
     for (size_t i = 0; i < m_countThreads; i++)
     {
-        m_threads.emplace_back([this, i](){
-            m_producerLogic(i);
+        m_threads.emplace_back([this, i, &cnfrmList](){
+            m_producerLogic(i, cnfrmList);
         });
     }
 }

@@ -6,6 +6,7 @@
 #include <functional>
 
 #include "PacketQueue/PacketQueue.h"
+#include "ConfirmList/ConfirmList.h"
 
 namespace dev
 {
@@ -23,7 +24,7 @@ namespace dev
 
         const uint8_t m_countThreads{0};
         std::vector<std::jthread> m_threads;
-        std::function<void(uint8_t threadId)> m_producerLogic;
+        std::function<void(uint8_t, ConfirmList&)> m_producerLogic;
 
         std::shared_ptr<PacketQueue> m_sendingQueue;
         std::mutex m_queueMtx;
@@ -37,12 +38,11 @@ namespace dev
         //Determine payload size in a random context [#seqNumPckt;#seqNumPckt*2].
         //Use UniformDistribution for hight-quality generator instead of just %(seqNumPckt*2).
         uint16_t calcPayLoadSize(uint16_t seqPckt, std::mt19937_64 & prng) const;
-        void producerLogic(uint8_t threadId);
+        void producerLogic(uint8_t threadId, ConfirmList& cnfrmList);
 
     public:
-        Generator(uint64_t totalPcktSends, uint8_t countThreads, 
-                std::optional<std::function<void(uint8_t threadId)>> producerLogic={});
-        void startGenerate();
+        Generator(uint64_t totalPcktSends, uint8_t countThreads, std::optional<std::function<void(uint8_t, ConfirmList&)>> producerLogic = {});
+        void startGenerate(ConfirmList& cnfrmList);
         std::shared_ptr<PacketQueue> getPcktQueue() { return m_sendingQueue; }
     };
 }

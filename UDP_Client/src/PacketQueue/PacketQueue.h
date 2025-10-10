@@ -20,7 +20,7 @@ namespace dev
         std::condition_variable m_cv;
         
     public:
-        void push(wireData&& pckt);
+        void push(wireData& pckt);
         bool pop(wireData& out);
         size_t close();
     };

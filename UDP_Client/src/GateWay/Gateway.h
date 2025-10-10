@@ -24,5 +24,6 @@ namespace dev
 
     public:
         std::size_t send(std::vector<unsigned char>&& buff);
+        std::size_t receive(std::vector<unsigned char>& out);
     };
 }

@@ -11,3 +11,13 @@ std::size_t dev::Gateway::send(std::vector<unsigned char>&& buff)
 {
     return m_udpSock.send(boost::asio::buffer(buff));
 }
+
+std::size_t dev::Gateway::receive(std::vector<unsigned char>& out)
+{
+    out.resize(65536); // максимальный размер UDP (с запасом под datagram)
+    boost::system::error_code ec;
+    std::size_t n = m_udpSock.receive(boost::asio::buffer(out), 0, ec);
+    if (ec) throw boost::system::system_error(ec);
+    out.resize(n);
+    return n;
+}

@@ -1,6 +1,6 @@
 #include <PacketQueue/PacketQueue.h>
 
-void dev::PacketQueue::push(wireData&& pckt)
+void dev::PacketQueue::push(wireData& pckt)
 {
     {
         std::lock_guard<std::mutex> lock(m_queueMtx);
