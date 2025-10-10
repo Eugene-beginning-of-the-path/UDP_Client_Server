@@ -11,12 +11,12 @@ void dev::PacketQueue::push(wireData&& pckt)
 
 bool dev::PacketQueue::pop(wireData& out)
 {
-    std::unique_lock<std::mutex> lock;
+    std::unique_lock<std::mutex> lock(m_queueMtx);
     m_cv.wait(lock, [this](){ return m_exit || m_queue.size(); });
 
     if (m_queue.size())
     {
-        out = m_queue.front();
+        out = std::move(m_queue.front());
         m_queue.pop();
         return true;
     }

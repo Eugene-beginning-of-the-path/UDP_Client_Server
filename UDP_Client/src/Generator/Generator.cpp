@@ -54,21 +54,20 @@ void dev::Generator::producerLogic(uint8_t threadId)
             break;
         }
 
-        std::vector<unsigned char> payload{65,66,67};
-        // std::vector<unsigned char> payload(calcPayLoadSize(seqPckt, prng));
-        // std::uniform_int_distribution<int> pl_dist(0, 255);
-        // for (auto & symbol : payload)
-        // {
-        //     symbol = static_cast<unsigned char>(pl_dist(prng));
-        // }
+        std::vector<unsigned char> payload(calcPayLoadSize(seqPckt, prng));
+        std::uniform_int_distribution<int> pl_dist(0, 255);
+        for (auto & symbol : payload)
+        {
+            symbol = static_cast<unsigned char>(pl_dist(prng));
+        }
 
         static thread_local std::unique_ptr<PacketDirector> builder = std::make_unique<PacketDirector>(std::make_unique<PacketBuilder>());
         builder->buildProduct(seqPckt, utls::timeStampNow(), std::move(payload));
-        std::cout << "displaying: " << *(builder->getProduct().get()) << std::endl;
-        // {
-        //     std::lock_guard<std::mutex> lock(m_queueMtx);
-        //     m_sendingQueue->push(std::move(builder->getProduct()->m_wire));
-        // }
+        
+        {
+            std::lock_guard<std::mutex> lock(m_queueMtx);
+            m_sendingQueue->push(std::move(builder->getProduct()->m_wire));
+        }
     }
 }
 

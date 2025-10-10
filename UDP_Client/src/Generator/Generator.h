@@ -12,7 +12,7 @@ namespace dev
     class Generator
     {
     private:
-        std::atomic_uint64_t m_globalId=5;
+        std::atomic_uint64_t m_globalId{0};
         uint16_t m_totalPcktSends{10'000};
 
         // inline static constexpr const uint16_t MIN_SIZE_PAYLOAD = 32;
