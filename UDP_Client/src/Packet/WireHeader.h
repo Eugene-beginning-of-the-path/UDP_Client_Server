@@ -12,7 +12,7 @@ namespace dev
         size_t   m_payLoadSize;
 
         utls::SHA256Buff m_checkSum;
-                                              //          [---------------HEADER--------------]
+                                     //          [---------------HEADER--------------]
         utls::HeadBuff m_wireHeader; //sequence: seqNum timeStamp payLoadSize checkSum
     };
 }

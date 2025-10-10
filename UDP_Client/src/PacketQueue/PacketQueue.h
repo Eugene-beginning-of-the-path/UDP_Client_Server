@@ -10,8 +10,6 @@ namespace dev
 {
     class PacketQueue
     {
-        using Packet = dev::Packet;
-        
     private:
         std::queue<Packet> m_queue;
         std::mutex m_queueMtx;
@@ -21,7 +19,7 @@ namespace dev
 
     public:
         void push(Packet&& pckt);
-        bool pop(dev::Packet& out);
+        bool pop(Packet& out);
         size_t close();
     };
 }

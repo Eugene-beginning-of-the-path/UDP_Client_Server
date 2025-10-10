@@ -5,6 +5,8 @@
 #include <functional>
 #include <thread>
 
+#include "PacketQueue/PacketQueue.h"
+
 namespace dev
 {
     class Generator
@@ -13,15 +15,18 @@ namespace dev
         std::atomic_uint64_t m_globalId{0};
         uint16_t m_totalPcktSends{10'000};
 
-        inline static constexpr const uint16_t MIN_SIZE_PAYLOAD = 32;
-        inline static constexpr const uint16_t MAX_SIZE_PAYLOAD = 900;
+        // inline static constexpr const uint16_t MIN_SIZE_PAYLOAD = 32;
+        // inline static constexpr const uint16_t MAX_SIZE_PAYLOAD = 900;
 
         std::random_device m_rd;
         std::vector<std::mt19937_64> m_prngVec;
 
-        const uint8_t m_countThreads{0};
+        const uint8_t m_countThreads{10};
         std::vector<std::jthread> m_threads;
         std::function<void(uint8_t threadId)> m_producerLogic;
+
+        PacketQueue m_sendingQueue;
+        std::mutex m_queueMtx;
 
     private:
 

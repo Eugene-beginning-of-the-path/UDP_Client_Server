@@ -10,14 +10,13 @@ void dev::PacketBuilder::reset()
     m_product = std::make_shared<WirePacket>();
 }
 
-void dev::PacketBuilder::producePacket(uint16_t seqNum, uint64_t timeStampNs, size_t payLoadSize, 
-    utls::PayLoadBuff&& payLoad) const
+void dev::PacketBuilder::producePacket(uint16_t seqNum, uint64_t timeStampNs, utls::PayLoadBuff&& payLoad) const
 {
     auto& pckt = m_product->m_pcktData;
     
     pckt.m_seqNum = seqNum;
     pckt.m_timeStampNs = timeStampNs;
-    pckt.m_payLoadSize = payLoadSize;
+    pckt.m_payLoadSize = payLoad.size();
     pckt.m_payload = std::move(payLoad);
 }
 
@@ -25,6 +24,7 @@ void dev::PacketBuilder::produceWireHeader() const
 {
     utls::HeadBuff headerRawBuff = utls::getWireHeader(m_product->m_pcktData);
     utls::SHA256Buff checkSum = utls::calcSha256(headerRawBuff, m_product->m_pcktData.m_payload);
+    std::memcpy(headerRawBuff.data()+sizeof(m_product->m_pcktData.m_timeStampNs),   &checkSum,  sizeof(SHA256_DIGEST_LENGTH));
     
     auto& pckt = m_product->m_pcktData;
     auto& wireHeader = m_product->m_wireHeader;
@@ -34,17 +34,18 @@ void dev::PacketBuilder::produceWireHeader() const
     wireHeader.m_payLoadSize = utls::htonll(pckt.m_payLoadSize);
     wireHeader.m_checkSum = std::move(checkSum);
     wireHeader.m_wireHeader = std::move(headerRawBuff);
+
 }
 
 void dev::PacketBuilder::produceWirePacket() const
 {
     auto& pckt = m_product->m_pcktData;
-    m_product->m_wire.reserve(sizeof(utls::HeadBuff) + sizeof(pckt.m_payLoadSize));
+    m_product->m_wire.resize(sizeof(Packet::PCKT_HEADER_SIZE) + sizeof(pckt.m_payLoadSize));
 
-    std::memcpy(m_product->m_wire.data(), m_product->m_wireHeader.m_wireHeader.data(), sizeof(utls::HeadBuff));
+    std::memcpy(m_product->m_wire.data(), m_product->m_wireHeader.m_wireHeader.data(), sizeof(Packet::PCKT_HEADER_SIZE));
     if (pckt.m_payLoadSize)
     {
-        std::memcpy(m_product->m_wire.data()+sizeof(utls::HeadBuff), pckt.m_payload.data(), pckt.m_payLoadSize);
+        std::memcpy(m_product->m_wire.data()+sizeof(Packet::PCKT_HEADER_SIZE), pckt.m_payload.data(), pckt.m_payLoadSize);
     }
 }
 

@@ -20,7 +20,7 @@ namespace dev
         PacketBuilder();
         void reset() override;
 
-        void producePacket(uint16_t seqNum, uint64_t timeStampNs, size_t payLoadSize, utls::PayLoadBuff&& payLoad) const;
+        void producePacket(uint16_t seqNum, uint64_t timeStampNs, utls::PayLoadBuff&& payLoad) const;
         void produceWireHeader() const;
         void produceWirePacket() const;
 

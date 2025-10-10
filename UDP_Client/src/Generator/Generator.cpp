@@ -1,6 +1,7 @@
 #include "Packet/Packet.h"
 #include "Generator/Generator.h"
 #include "Packet/PacketBuilder/PacketBuilder.h"
+#include "Packet/PacketBuilder/PacketDirector.h"
 
 dev::Generator::Generator(uint64_t totalPcktSends, uint8_t countThreads, std::function<void(uint8_t threadId)> producerLogic) : 
     m_totalPcktSends(totalPcktSends),
@@ -46,23 +47,20 @@ void dev::Generator::producerLogic(uint8_t threadId)
             break;
         }
 
-        uint16_t payLoadSize = calcPayLoadSize(seqPckt, prng);
-
-        std::vector<unsigned char> payload(payLoadSize);
+        std::vector<unsigned char> payload(calcPayLoadSize(seqPckt, prng));
         std::uniform_int_distribution<int> pl_dist(0, 255);
         for (auto & symbol : payload)
         {
             symbol = static_cast<unsigned char>(pl_dist(prng));
         }
 
-        //Пора создавать Packet и наполнять его
-        static thread_local std::unique_ptr<Builder> builder = std::make_unique<PacketBuilder>();
+        static thread_local std::unique_ptr<PacketDirector> builder = std::make_unique<PacketDirector>();
+        builder->buildProduct(seqPckt, utls::timeStampNow(), std::move(payload));
         
-            .m_seqNum = seqPckt, 
-            .m_timeStampNs = utls::timeStampNow(), 
-            .m_payLoadSize = payload.size(),
-            .m_payload = std::move(payload) };
-        
+        {
+            std::lock_guard<std::mutex> lock(m_queueMtx);
+            m_sendingQueue.push(builder->getProduct()->m_pcktData)
+        }
     }
 }
 
