@@ -16,7 +16,7 @@ void dev::PacketDirector::buildProduct(uint16_t seqNum, uint64_t timeStampNs, ut
         throw std::logic_error("PacketDirector: builder is nullptr");
     }
 
-    m_builder->producePacket(seqNum, timeStampNs, payLoad.size(), std::move(payLoad));
+    m_builder->producePacket(seqNum, timeStampNs, std::move(payLoad));
     m_builder->produceWireHeader();
     m_builder->produceWirePacket();
 }

@@ -54,12 +54,12 @@ void dev::Generator::producerLogic(uint8_t threadId)
             symbol = static_cast<unsigned char>(pl_dist(prng));
         }
 
-        static thread_local std::unique_ptr<PacketDirector> builder = std::make_unique<PacketDirector>();
+        static thread_local std::unique_ptr<PacketDirector> builder = std::make_unique<PacketDirector>(std::make_unique<PacketBuilder>());
         builder->buildProduct(seqPckt, utls::timeStampNow(), std::move(payload));
         
         {
             std::lock_guard<std::mutex> lock(m_queueMtx);
-            m_sendingQueue.push(builder->getProduct()->m_pcktData)
+            // m_sendingQueue.push(builder->getProduct()->m_pcktData)
         }
     }
 }

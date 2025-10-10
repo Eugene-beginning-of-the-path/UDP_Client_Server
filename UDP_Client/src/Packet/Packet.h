@@ -1,4 +1,7 @@
 #pragma once
+
+#include <openssl/sha.h>
+
 #include <cstdint>
 #include <vector>
 
@@ -8,7 +11,7 @@ namespace dev
     {
         //НЕВЕРНО! пропущен sha256
         static constexpr inline const uint16_t PCKT_HEADER_SIZE = 
-            sizeof(uint16_t) + sizeof(uint64_t) + sizeof(size_t) + sizeof(utls::SHA256Buff);
+            sizeof(uint16_t) + sizeof(uint64_t) + sizeof(size_t) + sizeof(SHA256_DIGEST_LENGTH);
 
         //Header fields:
         uint16_t m_seqNum;                          //sequence number of pckt
