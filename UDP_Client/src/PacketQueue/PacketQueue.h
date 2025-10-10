@@ -10,16 +10,19 @@ namespace dev
 {
     class PacketQueue
     {
-    private:
-        std::queue<Packet> m_queue;
-        std::mutex m_queueMtx;
-
-        bool m_exit = false;
-        std::condition_variable m_cv;
+    public:
+        using wireData = std::vector<unsigned char>;
 
     public:
-        void push(Packet&& pckt);
-        bool pop(Packet& out);
+        std::queue<wireData> m_queue;
+        std::mutex m_queueMtx;
+        
+        bool m_exit = false;
+        std::condition_variable m_cv;
+        
+    public:
+        void push(wireData&& pckt);
+        bool pop(wireData& out);
         size_t close();
     };
 }

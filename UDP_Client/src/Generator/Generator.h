@@ -2,8 +2,9 @@
 
 #include <atomic>
 #include <random>
-#include <functional>
 #include <thread>
+#include <optional>
+#include <functional>
 
 #include "PacketQueue/PacketQueue.h"
 
@@ -25,7 +26,7 @@ namespace dev
         std::vector<std::jthread> m_threads;
         std::function<void(uint8_t threadId)> m_producerLogic;
 
-        PacketQueue m_sendingQueue;
+        std::shared_ptr<PacketQueue> m_sendingQueue;
         std::mutex m_queueMtx;
 
     private:
@@ -40,7 +41,9 @@ namespace dev
         void producerLogic(uint8_t threadId);
 
     public:
-        Generator(uint64_t totalPcktSends, uint8_t countThreads, std::function<void(uint8_t threadId)> producerLogic);
+        Generator(uint64_t totalPcktSends, uint8_t countThreads, 
+                std::optional<std::function<void(uint8_t threadId)>> producerLogic={});
         void startGenerate();
+        std::shared_ptr<PacketQueue> getPcktQueue() { return m_sendingQueue; }
     };
 }

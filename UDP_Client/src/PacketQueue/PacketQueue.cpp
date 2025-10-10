@@ -1,6 +1,6 @@
 #include <PacketQueue/PacketQueue.h>
 
-void dev::PacketQueue::push(Packet&& pckt)
+void dev::PacketQueue::push(wireData&& pckt)
 {
     {
         std::lock_guard<std::mutex> lock(m_queueMtx);
@@ -9,7 +9,7 @@ void dev::PacketQueue::push(Packet&& pckt)
     m_cv.notify_one();
 }
 
-bool dev::PacketQueue::pop(dev::Packet& out)
+bool dev::PacketQueue::pop(wireData& out)
 {
     std::unique_lock<std::mutex> lock;
     m_cv.wait(lock, [this](){ return m_exit || m_queue.size(); });
@@ -18,7 +18,7 @@ bool dev::PacketQueue::pop(dev::Packet& out)
     {
         out = m_queue.front();
         m_queue.pop();
-        return true; //NRVO
+        return true;
     }
     return false;
 }

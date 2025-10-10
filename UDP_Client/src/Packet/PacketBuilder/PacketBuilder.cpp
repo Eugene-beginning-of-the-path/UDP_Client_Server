@@ -24,7 +24,8 @@ void dev::PacketBuilder::produceWireHeader() const
 {
     utls::HeadBuff headerRawBuff = utls::getWireHeader(m_product->m_pcktData);
     utls::SHA256Buff checkSum = utls::calcSha256(headerRawBuff, m_product->m_pcktData.m_payload);
-    std::memcpy(headerRawBuff.data()+sizeof(m_product->m_pcktData.m_timeStampNs),   &checkSum,  sizeof(SHA256_DIGEST_LENGTH));
+    std::memcpy(headerRawBuff.data()+sizeof(m_product->m_pcktData.m_timeStampNs)+sizeof(m_product->m_pcktData.m_seqNum)+
+        sizeof(m_product->m_pcktData.m_payLoadSize), checkSum.data(), SHA256_DIGEST_LENGTH);
     
     auto& pckt = m_product->m_pcktData;
     auto& wireHeader = m_product->m_wireHeader;
@@ -40,9 +41,9 @@ void dev::PacketBuilder::produceWireHeader() const
 void dev::PacketBuilder::produceWirePacket() const
 {
     auto& pckt = m_product->m_pcktData;
-    m_product->m_wire.resize(sizeof(Packet::PCKT_HEADER_SIZE) + sizeof(pckt.m_payLoadSize));
+    m_product->m_wire.resize(Packet::PCKT_HEADER_SIZE + pckt.m_payLoadSize);
 
-    std::memcpy(m_product->m_wire.data(), m_product->m_wireHeader.m_wireHeader.data(), sizeof(Packet::PCKT_HEADER_SIZE));
+    std::memcpy(m_product->m_wire.data(), m_product->m_wireHeader.m_wireHeader.data(), Packet::PCKT_HEADER_SIZE);
     if (pckt.m_payLoadSize)
     {
         std::memcpy(m_product->m_wire.data()+sizeof(Packet::PCKT_HEADER_SIZE), pckt.m_payload.data(), pckt.m_payLoadSize);

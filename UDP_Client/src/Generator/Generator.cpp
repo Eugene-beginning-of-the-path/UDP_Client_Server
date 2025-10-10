@@ -3,11 +3,17 @@
 #include "Packet/PacketBuilder/PacketBuilder.h"
 #include "Packet/PacketBuilder/PacketDirector.h"
 
-dev::Generator::Generator(uint64_t totalPcktSends, uint8_t countThreads, std::function<void(uint8_t threadId)> producerLogic) : 
+dev::Generator::Generator(uint64_t totalPcktSends, uint8_t countThreads, 
+        std::optional<std::function<void(uint8_t threadId)>> producerLogic) : 
     m_totalPcktSends(totalPcktSends),
     m_countThreads(countThreads),
-    m_producerLogic(producerLogic)
+    m_sendingQueue(std::make_shared<PacketQueue>())
 {
+    m_producerLogic = producerLogic.value_or(
+        std::function<void(uint8_t)>([this](uint8_t id){
+            this->producerLogic(id);
+        }));
+    
     m_threads.reserve(m_countThreads);
     initPRNGs();
 }
@@ -35,7 +41,6 @@ uint16_t dev::Generator::calcPayLoadSize(uint16_t seqPckt, std::mt19937_64 & prn
     std::uniform_int_distribution<uint64_t> dist(seqPckt, 2 * seqPckt);
     return dist(prng);
 }
-
 void dev::Generator::producerLogic(uint8_t threadId)
 {
     std::mt19937_64 & prng = m_prngVec[threadId];
@@ -59,7 +64,7 @@ void dev::Generator::producerLogic(uint8_t threadId)
         
         {
             std::lock_guard<std::mutex> lock(m_queueMtx);
-            // m_sendingQueue.push(builder->getProduct()->m_pcktData)
+            m_sendingQueue->push(std::move(builder->getProduct()->m_wire));
         }
     }
 }
