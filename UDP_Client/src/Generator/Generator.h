@@ -13,7 +13,7 @@ namespace dev
     {
     private:
         std::atomic_uint64_t m_globalId{0};
-        uint16_t m_totalPcktSends{10'000};
+        uint16_t m_totalPcktSends{0};
 
         // inline static constexpr const uint16_t MIN_SIZE_PAYLOAD = 32;
         // inline static constexpr const uint16_t MAX_SIZE_PAYLOAD = 900;
@@ -21,7 +21,7 @@ namespace dev
         std::random_device m_rd;
         std::vector<std::mt19937_64> m_prngVec;
 
-        const uint8_t m_countThreads{10};
+        const uint8_t m_countThreads{0};
         std::vector<std::jthread> m_threads;
         std::function<void(uint8_t threadId)> m_producerLogic;
 
