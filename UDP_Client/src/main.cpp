@@ -6,7 +6,7 @@
 
 int main()
 {
-    dev::Generator pcktGen(10'000, 1);
+    dev::Generator pcktGen(7, 1);
     
     dev::Gateway& gateWay = dev::Gateway::Instance();
     // std::future<void> ftr = std::async(std::launch::async, [&gateWay, queue = pcktGen.getPcktQueue()](){
@@ -20,8 +20,8 @@ int main()
     pcktGen.startGenerate();
     while(true)
     {
-        std::this_thread::sleep_for(std::chrono::seconds(3));
-        std::cout << pcktGen.getPcktQueue()->m_queue.size() << std::endl;
+        // std::this_thread::sleep_for(std::chrono::seconds(3));
+        // std::cout << pcktGen.getPcktQueue()->m_queue.size() << std::endl;
     }
 
     return 0;

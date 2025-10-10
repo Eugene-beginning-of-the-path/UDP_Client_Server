@@ -11,6 +11,7 @@ target_link_libraries(${PROJECT_NAME}
         Boost::headers
         Boost::system
         OpenSSL::Crypto
+        fmt::fmt
 )
 
 target_include_directories(${PROJECT_NAME}

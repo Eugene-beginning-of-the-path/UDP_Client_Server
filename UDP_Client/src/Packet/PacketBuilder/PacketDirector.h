@@ -1,5 +1,4 @@
 #pragma once
-
 #include "Packet/PacketBuilder/PacketBuilder.h"
 
 namespace dev

@@ -41,6 +41,8 @@ uint16_t dev::Generator::calcPayLoadSize(uint16_t seqPckt, std::mt19937_64 & prn
     std::uniform_int_distribution<uint64_t> dist(seqPckt, 2 * seqPckt);
     return dist(prng);
 }
+
+#include <iostream>
 void dev::Generator::producerLogic(uint8_t threadId)
 {
     std::mt19937_64 & prng = m_prngVec[threadId];
@@ -52,20 +54,21 @@ void dev::Generator::producerLogic(uint8_t threadId)
             break;
         }
 
-        std::vector<unsigned char> payload(calcPayLoadSize(seqPckt, prng));
-        std::uniform_int_distribution<int> pl_dist(0, 255);
-        for (auto & symbol : payload)
-        {
-            symbol = static_cast<unsigned char>(pl_dist(prng));
-        }
+        std::vector<unsigned char> payload{65,66,67};
+        // std::vector<unsigned char> payload(calcPayLoadSize(seqPckt, prng));
+        // std::uniform_int_distribution<int> pl_dist(0, 255);
+        // for (auto & symbol : payload)
+        // {
+        //     symbol = static_cast<unsigned char>(pl_dist(prng));
+        // }
 
         static thread_local std::unique_ptr<PacketDirector> builder = std::make_unique<PacketDirector>(std::make_unique<PacketBuilder>());
         builder->buildProduct(seqPckt, utls::timeStampNow(), std::move(payload));
-        
-        {
-            std::lock_guard<std::mutex> lock(m_queueMtx);
-            m_sendingQueue->push(std::move(builder->getProduct()->m_wire));
-        }
+        std::cout << "displaying: " << *(builder->getProduct().get()) << std::endl;
+        // {
+        //     std::lock_guard<std::mutex> lock(m_queueMtx);
+        //     m_sendingQueue->push(std::move(builder->getProduct()->m_wire));
+        // }
     }
 }
 

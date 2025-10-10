@@ -1,5 +1,4 @@
 #pragma once
-
 #include <array>
 #include <memory>
 #include <cstdint>
@@ -15,6 +14,7 @@ namespace dev::utls
     typedef std::vector<unsigned char> PayLoadBuff;
 
     uint64_t timeStampNow();
+    std::string fomatedTimeStamp(uint64_t tsNanoSec);
     uint64_t htonll(uint64_t v);
     HeadBuff getWireHeader(const dev::Packet& pckt);
     SHA256Buff calcSha256(const HeadBuff& header, const PayLoadBuff& payLoad);

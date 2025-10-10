@@ -1,5 +1,4 @@
 #pragma once
-
 #include "Packet/Packet.h"
 #include "Packet/WireHeader.h"
 
@@ -12,4 +11,6 @@ namespace dev
                                            //          [---------------HEADER--------------]
         std::vector<unsigned char> m_wire; //sequence: seqNum timeStamp payLoadSize checkSum payLoad
     };
+
+    std::ostream & operator<<(std::ostream & strm, const WirePacket& pctk);
 }
