@@ -41,7 +41,7 @@ namespace dev
         void producerLogic(uint8_t threadId, ConfirmList& cnfrmList);
 
     public:
-        Generator(uint64_t totalPcktSends, uint8_t countThreads, std::optional<std::function<void(uint8_t, ConfirmList&)>> producerLogic = {});
+        Generator(uint16_t totalPcktSends, uint8_t countThreads, std::optional<std::function<void(uint8_t, ConfirmList&)>> producerLogic = {});
         void startGenerate(ConfirmList& cnfrmList);
         std::shared_ptr<PacketQueue> getPcktQueue() { return m_sendingQueue; }
     };

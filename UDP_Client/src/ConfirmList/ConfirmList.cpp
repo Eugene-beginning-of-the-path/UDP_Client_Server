@@ -27,28 +27,31 @@ void dev::ConfirmList::push(uint16_t key, InWait&& val)
 
 void dev::ConfirmList::check()
 {
-    uint64_t ts_now = utls::timeStampNow();
+    uint64_t tsMsNow = utls::timeStampMsNow();
 
     std::lock_guard<std::mutex> lock(m_wtrsMtx);
-    for (auto & el : m_waiters)
+    for (auto it = m_waiters.begin(); it != m_waiters.end(); )
     {
-        if (cfg::RTO_NANO_SEC <= ts_now - el.second.m_lastAttemptTs)
+        if (cfg::RTO_MS <= tsMsNow - it->second.m_lastAttemptTsMs)
         {
-            if (cfg::RETRIES_SEND <= el.second.m_retries)
+            if (cfg::RETRIES_SEND <= it->second.m_retries)
             {
                 std::unique_lock<std::shared_mutex> writerLock(m_confirmedMtx);
-                m_confirmedList.try_emplace(el.first, std::make_pair(false, el.second));
+                m_confirmedList.try_emplace(it->first, std::make_pair(false, std::move(it->second)));
+                it = m_waiters.erase(it);
+                continue;
             }
 
-            if (!el.second.m_pckt)
+            if (!it->second.m_pckt)
             {
                 std::cerr << "InWait::Packet is lost" << std::endl;
                 continue;
             }
-            m_pctkQueue->push(el.second.m_pckt->m_wire);
-            el.second.m_retries++;
-            el.second.m_lastAttemptTs = ts_now;
+            m_pctkQueue->push(it->second.m_pckt->m_wire);
+            it->second.m_retries++;
+            it->second.m_lastAttemptTsMs = tsMsNow;
         }
+        ++it;
     }
 }
 

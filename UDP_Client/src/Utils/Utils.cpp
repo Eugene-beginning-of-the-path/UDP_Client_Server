@@ -7,10 +7,18 @@
 #include <fmt/chrono.h>
 #include <openssl/sha.h>
 
-uint64_t dev::utls::timeStampNow()
+uint64_t dev::utls::timeStampNsNow()
 {
     auto ns = std::chrono::time_point_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now()).time_since_epoch();
     return static_cast<uint64_t>(ns.count());
+}
+
+uint64_t dev::utls::timeStampMsNow()
+{
+    using clock = std::chrono::steady_clock;
+    const auto ms = std::chrono::time_point_cast<std::chrono::milliseconds>(clock::now())
+                        .time_since_epoch();
+    return static_cast<uint64_t>(ms.count());
 }
 
 std::string dev::utls::fomatedTimeStamp(uint64_t tsNanoSec) 

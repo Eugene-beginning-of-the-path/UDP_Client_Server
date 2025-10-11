@@ -20,6 +20,7 @@ int main() {
     std::memcpy(&seqNum, recv_buf.data(), sizeof(seqNum)*8);
     seqNum = ntohs(seqNum);
     std::cout << seqNum << std::endl;
+    while(true);
     
     return 0;
 }

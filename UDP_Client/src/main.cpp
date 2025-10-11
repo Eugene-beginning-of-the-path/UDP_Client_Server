@@ -21,6 +21,10 @@ int main()
         }
     }).detach();
 
+    //there are threads for gerenerating pckts
+    pcktGen.startGenerate(cnfrmList);
+    sleep(2);
+    
     //Получение+удаление
     std::thread([&cnfrmList](){
             //GateWay is receiving UDP
@@ -31,7 +35,11 @@ int main()
     //Проверка+отправка/удаление
     std::thread([&cnfrmList](){
             //Checking+re-send/del
-            //cnfrmList.check();
+            while(true) 
+            {
+                cnfrmList.check();
+                std::this_thread::sleep_for(std::chrono::seconds(1));
+            }
     }).detach();
 
     //Вывод удаленного
@@ -40,11 +48,9 @@ int main()
         while(cnfrmList.getNextIdDisplay() != cfg::TARGET_SEND_PACKETS)
         {
             cnfrmList.displayConfirmedPckt();
+            std::this_thread::sleep_for(std::chrono::seconds(1));
         }
     });
-    
-    //there are threads for gerenerating pckts
-    pcktGen.startGenerate(cnfrmList);
     
     displayCnfrmed.wait();
     return 0;

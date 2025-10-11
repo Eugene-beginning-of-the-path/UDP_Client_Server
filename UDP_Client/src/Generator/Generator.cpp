@@ -3,7 +3,7 @@
 #include "Packet/PacketBuilder/PacketBuilder.h"
 #include "Packet/PacketBuilder/PacketDirector.h"
 
-dev::Generator::Generator(uint64_t totalPcktSends, uint8_t countThreads, 
+dev::Generator::Generator(uint16_t totalPcktSends, uint8_t countThreads, 
         std::optional<std::function<void(uint8_t, ConfirmList&)>> producerLogic) : 
     m_totalPcktSends(totalPcktSends),
     m_countThreads(countThreads),
@@ -61,10 +61,10 @@ void dev::Generator::producerLogic(uint8_t threadId, ConfirmList& cnfrmList)
         }
 
         static thread_local std::unique_ptr<PacketDirector> builder = std::make_unique<PacketDirector>(std::make_unique<PacketBuilder>());
-        builder->buildProduct(seqPckt, utls::timeStampNow(), std::move(payload));
+        builder->buildProduct(seqPckt, utls::timeStampNsNow(), std::move(payload));
 
         auto wirePckt = builder->getProduct();
-        cnfrmList.push(wirePckt->m_wireHeader.m_seqNum, InWait{.m_pckt = wirePckt});
+        cnfrmList.push(wirePckt->m_pcktData.m_seqNum, InWait{.m_pckt = wirePckt, .m_lastAttemptTsMs = utls::timeStampMsNow()});
         {
             std::lock_guard<std::mutex> lock(m_queueMtx);
             m_sendingQueue->push(wirePckt->m_wire);
