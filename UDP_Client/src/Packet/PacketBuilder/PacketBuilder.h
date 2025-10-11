@@ -3,10 +3,10 @@
 #include <memory>
 #include <cstring>
 
-#include "Utils/Utils.h"
-#include "Packet/Packet.h"
 #include "Packet/WireHeader.h"
 #include "Packet/WirePacket.h"
+#include "udptLib/Utils/Utils.h"
+#include "udptLib/Packet/Packet.h"
 #include "Patterns/Builder/Builder.h"
 
 namespace dev

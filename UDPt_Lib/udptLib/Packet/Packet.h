@@ -7,9 +7,8 @@ namespace dev
 {
     struct Packet
     {
-        //НЕВЕРНО! пропущен sha256
         static constexpr inline const uint16_t PCKT_HEADER_SIZE = 
-            sizeof(uint16_t) + sizeof(uint64_t) + sizeof(size_t) + sizeof(SHA256_DIGEST_LENGTH);
+            sizeof(uint16_t) + sizeof(uint64_t) + sizeof(size_t) + SHA256_DIGEST_LENGTH;
 
         //Header fields:
         uint16_t m_seqNum;                          //sequence number of pckt

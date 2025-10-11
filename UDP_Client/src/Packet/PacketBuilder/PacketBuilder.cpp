@@ -1,4 +1,5 @@
 #include "Packet/PacketBuilder/PacketBuilder.h"
+#include "Utils/Utils.h"
 
 dev::PacketBuilder::PacketBuilder()
 {

@@ -11,5 +11,6 @@ FetchContent_MakeAvailable(fmt)
 find_package(Boost COMPONENTS headers system REQUIRED)
 find_package(OpenSSL REQUIRED)
 
+add_subdirectory(UDPt_Lib)
 add_subdirectory(UDP_Client)
 add_subdirectory(UDP_Server)

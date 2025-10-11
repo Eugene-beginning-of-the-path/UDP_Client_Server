@@ -1,7 +1,7 @@
 #include <iostream>
 #include <thread>
 
-#include "GateWay/Gateway.h"
+#include "udptLib/GateWay/Gateway.h"
 #include "Generator/Generator.h"
 #include "ConfirmList/ConfirmList.h"
 
@@ -25,22 +25,25 @@ int main()
     pcktGen.startGenerate(cnfrmList);
     sleep(2);
     
-    //Получение+удаление
-    std::thread([&cnfrmList](){
-            //GateWay is receiving UDP
-            //Del
-            //cnfrmList.eraseWaiter(seqNum network-ending);
-    }).detach();
+    // //Получение+удаление
+    // std::thread([&cnfrmList](){
+    //         //GateWay is receiving UDP
+    //         //Del
+    //         //cnfrmList.eraseWaiter(seqNum network-ending);
+    //         cnfrmList.eraseWaiter(1);
+    //         cnfrmList.eraseWaiter(0);
+    //         cnfrmList.eraseWaiter(2);
+    // }).detach();
 
     //Проверка+отправка/удаление
-    std::thread([&cnfrmList](){
-            //Checking+re-send/del
-            while(true) 
-            {
-                cnfrmList.check();
-                std::this_thread::sleep_for(std::chrono::seconds(1));
-            }
-    }).detach();
+    // std::thread([&cnfrmList](){
+    //         //Checking+re-send/del
+    //         while(true) 
+    //         {
+    //             cnfrmList.check();
+    //             std::this_thread::sleep_for(std::chrono::seconds(1));
+    //         }
+    // }).detach();
 
     //Вывод удаленного
     std::future<void> displayCnfrmed = std::async(std::launch::async, [&cnfrmList]{

@@ -8,11 +8,7 @@ add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 
 target_link_libraries(${PROJECT_NAME}
     PRIVATE 
-        Boost::headers
-        Boost::system
-        OpenSSL::Crypto
-        fmt::fmt
-)
+        UDPt_Lib)
 
 target_include_directories(${PROJECT_NAME}
     PRIVATE

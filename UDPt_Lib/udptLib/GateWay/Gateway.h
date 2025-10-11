@@ -1,7 +1,7 @@
 #pragma once
 #include <boost/asio.hpp>
 
-#include "Patterns/Singleton/Singleton.h"
+#include "udptLib/Patterns/Singleton/Singleton.h"
 
 using boost::asio::ip::udp;
 
