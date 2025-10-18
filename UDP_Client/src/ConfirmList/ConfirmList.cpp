@@ -25,11 +25,13 @@ void dev::ConfirmList::push(uint16_t key, InWait&& val)
     m_waiters.try_emplace(key, val);
 }
 
-void dev::ConfirmList::check()
+bool dev::ConfirmList::check()
 {
     uint64_t tsMsNow = utls::timeStampMsNow();
 
     std::lock_guard<std::mutex> lock(m_wtrsMtx);
+    bool isNewCnfrmPckt = false;
+
     for (auto it = m_waiters.begin(); it != m_waiters.end(); )
     {
         if (cfg::RTO_MS <= tsMsNow - it->second.m_lastAttemptTsMs)
@@ -39,12 +41,15 @@ void dev::ConfirmList::check()
                 std::unique_lock<std::shared_mutex> writerLock(m_confirmedMtx);
                 m_confirmedList.try_emplace(it->first, std::make_pair(false, std::move(it->second)));
                 it = m_waiters.erase(it);
+
+                isNewCnfrmPckt = true;
                 continue;
             }
 
             if (!it->second.m_pckt)
             {
                 std::cerr << "InWait::Packet is lost" << std::endl;
+                it = m_waiters.erase(it);
                 continue;
             }
             m_pctkQueue->push(it->second.m_pckt->m_wire);
@@ -53,6 +58,8 @@ void dev::ConfirmList::check()
         }
         ++it;
     }
+
+    return isNewCnfrmPckt;
 }
 
 bool dev::ConfirmList::eraseWaiter(uint16_t seqNum, isConfirmed isCnfrm)
@@ -87,4 +94,16 @@ size_t dev::ConfirmList::clearConfirmedList()
     size_t size = m_confirmedList.size();
     m_confirmedList.clear();
     return size;
+}
+
+const dev::ConfirmList* dev::ConfirmList::waitConfirmedPckt() const
+{
+    std::unique_lock<std::shared_mutex> lock(m_confirmedMtx);
+    m_cv.wait(lock, [this](){ return !m_confirmedList.empty(); });
+    return this;
+}
+
+void dev::ConfirmList::notifyAboutConfirmedPckt() const
+{
+    m_cv.notify_one();
 }

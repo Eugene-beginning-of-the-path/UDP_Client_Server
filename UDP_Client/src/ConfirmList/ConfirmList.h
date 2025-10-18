@@ -22,17 +22,21 @@ namespace dev
 
         std::map<uint16_t, std::pair<isConfirmed, InWait>> m_confirmedList;
         mutable std::shared_mutex m_confirmedMtx;
+        mutable std::condition_variable_any m_cv;
 
         mutable std::atomic_uint16_t m_idNext{0};
-
+    
     public:
         ConfirmList(std::shared_ptr<PacketQueue> pcktQueue);
 
         uint16_t getNextIdDisplay() const;
         void push(uint16_t key, InWait&& val);
-        void check();
+        bool check();
         bool eraseWaiter(uint16_t seqNum, isConfirmed isCnfrm = true);
         void displayConfirmedPckt() const;
         size_t clearConfirmedList();
+
+        const dev::ConfirmList* waitConfirmedPckt() const;
+        void notifyAboutConfirmedPckt() const;
     };
 }

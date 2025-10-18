@@ -12,7 +12,7 @@ int main()
     
     dev::Gateway& gateWay = dev::Gateway::Instance(cfg::TARGET_IP_V4, cfg::TARGET_PORT);
 
-    //thread for sending built pckt throught once UDP sock
+    //Thread for sending built pckt throught once UDP sock
     std::thread([&gateWay, queue = pcktGen.getPcktQueue()](){
         dev::PacketQueue::wireData data;
         while (queue->pop(data))
@@ -21,37 +21,43 @@ int main()
         }
     }).detach();
 
-    //there are threads for gerenerating pckts
+    //There are threads for generating pckts
     pcktGen.startGenerate(cnfrmList);
     sleep(2);
     
-    // //Получение+удаление
-    // std::thread([&cnfrmList](){
-    //         //GateWay is receiving UDP
-    //         //Del
-    //         //cnfrmList.eraseWaiter(seqNum network-ending);
-    //         cnfrmList.eraseWaiter(1);
-    //         cnfrmList.eraseWaiter(0);
-    //         cnfrmList.eraseWaiter(2);
-    // }).detach();
+    //Receiving + deleting
+    std::thread([&cnfrmList](){
+            //GateWay is receiving UDP
+            //Del
+            std::vector<int> gotSeqNum {1,0,2};
+            while(!gotSeqNum.empty())
+            {
+                //cnfrmList.eraseWaiter(seqNum network-ending):
+                if (cnfrmList.eraseWaiter(*gotSeqNum.begin()))
+                {
+                    cnfrmList.notifyAboutConfirmedPckt();
+                    gotSeqNum.erase(gotSeqNum.begin());
+                }
+            }
+    }).detach();
 
-    //Проверка+отправка/удаление
-    // std::thread([&cnfrmList](){
-    //         //Checking+re-send/del
-    //         while(true) 
-    //         {
-    //             cnfrmList.check();
-    //             std::this_thread::sleep_for(std::chrono::seconds(1));
-    //         }
-    // }).detach();
+    // Checking + re-send/del
+    std::thread([&cnfrmList](){
+            while(true) 
+            {
+                if (cnfrmList.check())
+                {
+                    cnfrmList.notifyAboutConfirmedPckt();
+                }
+            }
+    }).detach();
 
-    //Вывод удаленного
+    //Displaying deleted msgs
     std::future<void> displayCnfrmed = std::async(std::launch::async, [&cnfrmList]{
         //Displaying till cfg::TARGET_SEND_PACKETS
         while(cnfrmList.getNextIdDisplay() != cfg::TARGET_SEND_PACKETS)
         {
-            cnfrmList.displayConfirmedPckt();
-            std::this_thread::sleep_for(std::chrono::seconds(1));
+            cnfrmList.waitConfirmedPckt()->displayConfirmedPckt();
         }
     });
     
