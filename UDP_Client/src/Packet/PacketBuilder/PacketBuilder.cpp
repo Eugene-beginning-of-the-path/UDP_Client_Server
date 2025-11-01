@@ -47,7 +47,7 @@ void dev::PacketBuilder::produceWirePacket() const
     std::memcpy(m_product->m_wire.data(), m_product->m_wireHeader.m_wireHeader.data(), Packet::PCKT_HEADER_SIZE);
     if (pckt.m_payLoadSize)
     {
-        std::memcpy(m_product->m_wire.data()+sizeof(Packet::PCKT_HEADER_SIZE), pckt.m_payload.data(), pckt.m_payLoadSize);
+        std::memcpy(m_product->m_wire.data()+Packet::PCKT_HEADER_SIZE, pckt.m_payload.data(), pckt.m_payLoadSize);
     }
 }
 

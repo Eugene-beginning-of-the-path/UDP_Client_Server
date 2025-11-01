@@ -18,6 +18,6 @@ dev::utls::HeadBuff dev::utls::getWireHeader(const dev::Packet& pckt)
 
     std::memcpy(headerRawBuff.data(),               &seq,   sizeof(seq));
     std::memcpy(headerRawBuff.data()+sizeof(seq),   &tmNs,  sizeof(tmNs));
-    std::memcpy(headerRawBuff.data()+sizeof(tmNs),  &payLoadSize,  sizeof(payLoadSize));
+    std::memcpy(headerRawBuff.data()+sizeof(seq)+sizeof(tmNs),  &payLoadSize,  sizeof(payLoadSize));
     return headerRawBuff;
 }
